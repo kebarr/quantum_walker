@@ -2,7 +2,7 @@
 quantum_walk
 
 Usage:
-    quantum_walk [ (( --initial_state_fn=<filename> | --initial_state=<filename>)  --i=<arg>)  (--graph_creation_function=<filename> --coin_creation_function=<filename> --n=<int>| --adjacency_matrix=<filename> --coin_matrix=<filename>) --output_filename=<filename>] STEPS
+    quantum_walk [ (( --initial_state_fn=<filename> | --initial_state=<filename>)  --i=<arg>)  (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --n=<int>| --adjacency_matrix=<filename> --coin_matrix=<filename>) --output_filename=<filename>] STEPS
     quantum_walk -h
     quantum_walk --version
 
@@ -19,7 +19,7 @@ Options:
     --graph_creation_fn=<filename>        Specify structure to walk on via function
     --coin_creation_fn=<filename>         Function to generate coin
     --adjacency_matrix=<filename>         Numpy array cointaining structure
-    --coin_matrix=<filename>            Numpy array containing coin 
+    --coin_matrix=<filename>            Numpy array containing coin
     --output_filename=<filename>          Destination to pickle results
 """
 
@@ -39,8 +39,8 @@ def parse_time_evolution_options(options):
         coin_matrix = coin_matrix_creator(n)
         adjacency_matrix = adjacency_matrix_creator(n)
     elif "--adjacency_matrix" in keys:
-        coin_matrix = unpickle_option(options["--coin_matrix"]) 
-        adjacency_matrix = unpickle_option(options["--adjacency_matrix"]) 
+        coin_matrix = unpickle_option(options["--coin_matrix"])
+        adjacency_matrix = unpickle_option(options["--adjacency_matrix"])
     return coin_matrix, adjacency_matrix
 
 def parse_initial_state_options(options):
@@ -51,9 +51,9 @@ def parse_initial_state_options(options):
             state_vector_creator = f.read()
         initial_state = state_vector_creator(options["i"])
     elif "--initial_state" in keys:
-        initial_state = unpickle_option(options["--initial_state"]) 
+        initial_state = unpickle_option(options["--initial_state"])
     return initial_state
-    
+
 def parse_walk_options(options):
     coin_matrix, adjacency_matrix = parse_time_evolution_options(options)
     initial_state = parse_initial_state_options(options)
@@ -63,13 +63,14 @@ def parse_walk_options(options):
 
 def unpickle_option(option):
     with open(option, "r") as f:
-        result = pickle.load(f)   
+        result = pickle.load(f)
     return result
 
 def read_option(option):
-    with open(option, "r") as f:
-        string = f.read()
-    # TODO: work out how to assign to function defined in file
+    locals = {}
+    namespace = {}
+    execfile(option, namespace, locals)
+    result = locals.values()[0]
     return result
 
 def run_walk():
@@ -93,5 +94,5 @@ def run_walk():
     if options["--output_filename"]:
         with open(options["--output_filename"], "w") as f:
             f.write(lines)
-    
+
 

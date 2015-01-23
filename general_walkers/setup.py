@@ -15,7 +15,7 @@ setup (
     version=version,
     description='Quantum Walker',
     packages=['quantum_walk'],
-    install_requires=['numpy', 'scipy'],
+    install_requires=['numpy'],
     include_package_data=True,
     author='Katie Barr',
     entry_points={'console_scripts': 'quantum_walk=quantum_walk.run_walk:run_walk'}
