@@ -40,6 +40,6 @@ class QuantumWalkOnLine(QuantumWalk):
         size = self.line_length
         a = coin_bias**0.5
         b = (1-coin_bias)**0.5
-        coin_at_nodes = np.array([[a, b],[a, b]])
+        coin_at_nodes = np.array([[a, b],[a, -b]])
         id = np.eye(size-1)
         self.coin = np.kron(id, coin_at_nodes)
