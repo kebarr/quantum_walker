@@ -38,10 +38,8 @@ class QuantumWalkOnLine(QuantumWalk):
 
     def create_coin(self, coin_bias):
         size = self.line_length
-        coin_states = 2*(size + 1)
-        coin_matrix = np.zeros((coin_states, coin_states))
         a = coin_bias**0.5
         b = (1-coin_bias)**0.5
         coin_at_nodes = np.array([[a, b],[a, b]])
-        id = np.eye(size)
+        id = np.eye(size-1)
         self.coin = np.kron(id, coin_at_nodes)
