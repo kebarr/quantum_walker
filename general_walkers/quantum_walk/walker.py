@@ -16,12 +16,14 @@ def is_unitary(operator, tolerance=0.0001):
 
 class QuantumWalk(object):
     """Basic quantum walk, where the user defines the initial state and time evolution operators
-       Base class for walks with time evolution operators and initial states defined in a file, or by functions
     """
     def __init__(self, initial_state, coin_operator, adjacency_matrix):
-        self.coin_operator = coin_operator
+        print adjacency_matrix
+        if not is_unitary(coin_operator):
+            raise ValueError("Coin operator must be unitary")
+        else:
+            self.coin_operator = coin_operator
         self.shift_operator = createshift(adjacency_matrix)
-        print self.shift_operator.shape, coin_operator.shape
         # if invalid adjacency matrix passed in, shift operator isn't validly quantum mechanical
         if not is_unitary(self.shift_operator):
             raise ValueError("Adjacency matirx must have a maximum of 1 link between each pair of nodes and contain no self loops")
@@ -56,7 +58,7 @@ class QuantumWalk(object):
     @property
     def node_degrees(self):
         adj = self.adjacency_matrix
-        return [np.sum(adj[i]) for i in xrange(len(adj))]
+        return [int(np.sum(adj[i])) for i in xrange(len(adj))]
 
     def probability_at_node(self, index):
         if index > len(self.adjacency_matrix):

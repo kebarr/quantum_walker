@@ -10,12 +10,12 @@ def finddegrees(adj):
         number = 0
         for j in range(len(adj[i])):
             number += adj[i][j]
-        list = [0 for k in range(number)]
+        list = [0 for k in range(int(number))]
         number2 = 0
         # list is list of nodes we're joined to, when we're joined twice, repeat the vertex with 2 links. can geenralise further by just doing for i in range(adj[i][j]) 
         for j in range(len(adj[i])):
             if adj[i][j] != 0:
-                for s in range(adj[i][j]):
+                for s in range(int(adj[i][j])):
                     list[number2] = j
                     number2 += 1
         degrees[i] = list
@@ -54,6 +54,7 @@ def forcoinstate(degree, i, j):
     
 
 def createshift(adj):
+    print adj
     degree = finddegrees(adj)
     nodeindex = firstnode(degree)
     # create matrix of correct size from degree, size is last index of firstnode plus degree of that node
@@ -80,7 +81,7 @@ def createshift(adj):
             for k in range(len(degree2[node])):
                 if degree2[node][k] == i:
                     coinstate2 = nodeindex[node] + forcoinstate(degree, node, i)
-            for k in range(nolinks):
+            for k in range(int(nolinks)):
                 array[coinstate1 + k][coinstate2 + k] = 1
     for i in range(len(array)):
         for j in range(len(array)):

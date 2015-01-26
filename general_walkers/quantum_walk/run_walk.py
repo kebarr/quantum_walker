@@ -2,7 +2,7 @@
 quantum_walk
 
 Usage:
-    quantum_walk [ (( --initial_state_fn=<filename> | --initial_state=<filename>)  --i=<arg>)  (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --n=<int>| --adjacency_matrix=<filename> --coin_matrix=<filename>) --output_filename=<filename>] STEPS
+    quantum_walk [ ( --initial_state_fn=<filename> --state_name=<arg> --i=<arg>| --initial_state=<filename> --adjacency_matrix=<filename> --coin_matrix=<filename>) (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --coin_name=<arg> --graph_name=<arg> --n=<int>)  --output_filename=<filename>] STEPS
     quantum_walk -h
     quantum_walk --version
 
@@ -15,17 +15,23 @@ Arguments:
 Options:
     --initial_state_fn=<filename>         Function to generate initial state vector
     --i=<arg>                             Parameter for initial state creation
-    --initial_state=<filename>            Initial state vector
+    --initial_state=<filename>            Initial state vector as pickled object
+    --state_name=<arg>                    String of initial state function name
     --graph_creation_fn=<filename>        Specify structure to walk on via function
+    --graph_name=<arg>                    String of adjacnecy matrix creation fn name
     --coin_creation_fn=<filename>         Function to generate coin
-    --adjacency_matrix=<filename>         Numpy array cointaining structure
-    --coin_matrix=<filename>            Numpy array containing coin
+    --coin_name=<arg>                     String of coin matrix creation fn name
+    --adjacency_matrix=<filename>         Pickled numpy array cointaining structure
+    --coin_matrix=<filename>              Pickled numpy array containing coin
     --output_filename=<filename>          Destination to pickle results
 """
 
 import docopt
 from quantum_walk.walker import QuantumWalk, create_sample_initial_state, create_sample_time_ev_operators
 import pickle
+from scipy.fftpack import fft
+import numpy as np
+import scipy.linalg
 
 
 def parse_time_evolution_options(options):
@@ -33,9 +39,9 @@ def parse_time_evolution_options(options):
     coin_matrix = None
     adjacency_matrix = None
     if "--graph_creation_fn" in keys:
-        adjacency_matrix_creator = read_option(options["--graph_creation_fn"])
-        coin_matrix_creator = read_option(options["--coin_creation_fn"])
-        n = options["--n"]
+        adjacency_matrix_creator = read_option(options["--graph_creation_fn"], options["--graph_name"])
+        coin_matrix_creator = read_option(options["--coin_creation_fn"], options["--coin_name"])
+        n = int(options["--n"])
         coin_matrix = coin_matrix_creator(n)
         adjacency_matrix = adjacency_matrix_creator(n)
     elif "--adjacency_matrix" in keys:
@@ -47,9 +53,8 @@ def parse_initial_state_options(options):
     keys = [key for key in options.keys() if options[key] is not None]
     initial_state = None
     if "--initial_state_fn" in keys:
-        with open(options["--initial_state_fn"], "r") as f:
-            state_vector_creator = f.read()
-        initial_state = state_vector_creator(options["i"])
+        state_vector_creator = read_option(options["--initial_state_fn"], options["--state_name"])
+        initial_state = state_vector_creator(int(options["--i"]))
     elif "--initial_state" in keys:
         initial_state = unpickle_option(options["--initial_state"])
     return initial_state
@@ -66,21 +71,23 @@ def unpickle_option(option):
         result = pickle.load(f)
     return result
 
-def read_option(option):
+def read_option(option, name_option):
     locals = {}
-    namespace = {}
-    execfile(option, namespace, locals)
-    result = locals.values()[0]
+    execfile(option, locals)
+    result = locals[name_option]
     return result
 
 def run_walk():
     options = docopt.docopt(__doc__, version='0.1')
     print options
     initial_state, coin_matrix, adjacency_matrix = parse_walk_options(options)
-    if not coin_matrix:
+    # if time evolution operators not specified via command line, use default
+    if coin_matrix == None:
         coin_matrix, adjacency_matrix = create_sample_time_ev_operators()
-    if not initial_state:
+    # ditto initial state
+    if initial_state == None:
         initial_state = create_sample_initial_state()
+    print adjacency_matrix
     walk = QuantumWalk(initial_state, coin_matrix, adjacency_matrix)
     steps = options["STEPS"]
     lines = ""
