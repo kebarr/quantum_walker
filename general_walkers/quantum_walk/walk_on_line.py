@@ -4,7 +4,15 @@ import matplotlib.pyplot as plt
 
 
 class QuantumWalkOnLine(QuantumWalk):
-    def __init__(self, max_steps, coin_bias, initial_state_bias):
+    """Simulate the quantum walk on the line, initialised with configurable
+       coin and initial state bias. Inititally walker starts localised at a
+       single node, in the center of the line.
+       N.b. adjacency matrix specifies a cycle. This cycle is larger than 2 times
+       the number of steps in the walk, so amplitude never meets at the other side.
+       Hence, it is a valid simulation of the walk on the line.
+       
+    """
+    def __init__(self, max_steps, coin_bias=0.5, initial_state_bias=0.5):
         self.max_steps = max_steps
         self.line_length = 2*max_steps + 2 # making graph larger than number of steps simulates walk on infinite line
         self.coin_bias = coin_bias
@@ -18,6 +26,10 @@ class QuantumWalkOnLine(QuantumWalk):
         
 
     def step(self):
+        """ Perform one step of walk on line.
+            As number of steps we can validly run for is limited by construction
+            raise value error if this step would take us beyond limit
+        """
         max_steps = self.max_steps
         curr_steps = self.number_of_steps
         if curr_steps < max_steps:
@@ -42,7 +54,7 @@ class QuantumWalkOnLine(QuantumWalk):
             raise ValueError("Total number of steps %d must be less than %d" % (curr_steps, max_steps))
 
     def create_adjacency_matrix(self):
-        """ Creates adjacency matrix for a graph of a line of length size.
+        """ Creates adjacency matrix for a graph of a cycle of length size.
             Each node, n, is connected by single edges to nodes n-1 and n+2
         """
         size = self.line_length

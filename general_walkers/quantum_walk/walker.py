@@ -2,6 +2,8 @@ import numpy as np
 import math
 from time_ev_operators import createshift
 
+np.set_printoptions(precision=3, suppress=True)
+
 def is_unitary(operator, tolerance=0.0001):
     h, w = operator.shape
     if not h == w:
