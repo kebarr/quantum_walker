@@ -2,7 +2,7 @@
 quantum_walk
 
 Usage:
-    quantum_walk [ ( --initial_state_fn=<filename> --state_name=<arg> --i=<arg>| --initial_state=<filename> --adjacency_matrix=<filename> --coin_matrix=<filename>) (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --coin_name=<arg> --graph_name=<arg> --n=<int>)  --output_filename=<filename>] STEPS
+    quantum_walk [ ( --initial_state_fn=<filename> --state_name=<arg> --i=<arg>| --initial_state=<filename> --adjacency_matrix=<filename> --coin_matrix=<filename>) (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --coin_name=<arg> --graph_name=<arg> --n=<int>) (--coin_bias=<arg> --initial_state_bias=<arg>)  --output_filename=<filename>] STEPS
     quantum_walk -h
     quantum_walk --version
 
@@ -23,11 +23,14 @@ Options:
     --coin_name=<arg>                     String of coin matrix creation fn name
     --adjacency_matrix=<filename>         Pickled numpy array cointaining structure
     --coin_matrix=<filename>              Pickled numpy array containing coin
+    --coin_bias=<arg>                     Number from 0 to 1 to skew coin by
+    --initial_state_bias=<arg>            Number from 0 to 1 to skew initial state by
     --output_filename=<filename>          Destination to pickle results
 """
 
 import docopt
 from quantum_walk.walker import QuantumWalk, create_sample_initial_state, create_sample_time_ev_operators
+from quantum_walk.walk_on_line import QuantumWalkOnLine
 import pickle
 from scipy.fftpack import fft
 import numpy as np
@@ -77,9 +80,8 @@ def read_option(option, name_option):
     result = locals[name_option]
     return result
 
-def run_walk():
-    options = docopt.docopt(__doc__, version='0.1')
-    print options
+
+def initialise_walk_on_arbitrary_graph(options):
     initial_state, coin_matrix, adjacency_matrix = parse_walk_options(options)
     # if time evolution operators not specified via command line, use default
     if coin_matrix == None:
@@ -87,8 +89,17 @@ def run_walk():
     # ditto initial state
     if initial_state == None:
         initial_state = create_sample_initial_state()
-    print adjacency_matrix
     walk = QuantumWalk(initial_state, coin_matrix, adjacency_matrix)
+    return walk
+
+
+def run_walk():
+    options = docopt.docopt(__doc__, version='0.1')
+    condition = "--coin_bias" in options.keys()
+    if condition:
+        walk = QuantumWalkOnLine(int(options["STEPS"]), float(options["--coin_bias"]), float(options["--initial_state_bias"]))
+    else:
+        walk = initialise_walk_on_arbitrary_graph(options)
     steps = options["STEPS"]
     lines = ""
     for step in xrange(int(steps)):
@@ -101,5 +112,7 @@ def run_walk():
     if options["--output_filename"]:
         with open(options["--output_filename"], "w") as f:
             f.write(lines)
+    if condition:
+        walk.plot()
 
 

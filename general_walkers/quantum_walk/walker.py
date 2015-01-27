@@ -24,6 +24,7 @@ class QuantumWalk(object):
         else:
             self.coin_operator = coin_operator
         self.shift_operator = createshift(adjacency_matrix)
+        print self.shift_operator.shape
         # if invalid adjacency matrix passed in, shift operator isn't validly quantum mechanical
         if not is_unitary(self.shift_operator):
             raise ValueError("Adjacency matirx must have a maximum of 1 link between each pair of nodes and contain no self loops")

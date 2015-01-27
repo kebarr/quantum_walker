@@ -54,7 +54,6 @@ def forcoinstate(degree, i, j):
     
 
 def createshift(adj):
-    print adj
     degree = finddegrees(adj)
     nodeindex = firstnode(degree)
     # create matrix of correct size from degree, size is last index of firstnode plus degree of that node
