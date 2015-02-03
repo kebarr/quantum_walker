@@ -10,7 +10,11 @@ class QuantumWalkOnLine(QuantumWalk):
        N.b. adjacency matrix specifies a cycle. This cycle is larger than 2 times
        the number of steps in the walk, so amplitude never meets at the other side.
        Hence, it is a valid simulation of the walk on the line.
-       
+       Arguments:
+       max_steps- this is the maximum number of steps the walk will be run for
+       initial_state_bias- initial probability distribution of amplitude in 'going 
+       left' and 'going right' states.
+       coin_bias- amount of amplitude coin sends left and right on a given step
     """
     def __init__(self, max_steps, coin_bias=0.5, initial_state_bias=0.5):
         self.max_steps = max_steps
@@ -44,7 +48,7 @@ class QuantumWalkOnLine(QuantumWalk):
             self.number_of_steps += n
             super(QuantumWalkOnLine, self).steps(n)
         else:
-            raise ValueError("Total number of steps %d must be less than %d" % (curr_steps, max_steps))
+            raise ValueError("Total number of steps %d must be less than %d" % (self.number_of_steps, max_steps))
 
     def go_to_step(self, step):
         if self.number_of_steps + step < self.max_steps:

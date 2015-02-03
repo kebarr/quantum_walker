@@ -2,7 +2,7 @@
 quantum_walk
 
 Usage:
-    quantum_walk [ ( --initial_state_fn=<filename> --state_name=<arg> --i=<arg>| --initial_state=<filename> --adjacency_matrix=<filename> --coin_matrix=<filename>) (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --coin_name=<arg> --graph_name=<arg> --n=<int>) (--coin_bias=<arg> --initial_state_bias=<arg>)  --output_filename=<filename>] STEPS
+    quantum_walk [ ( --initial_state_fn=<filename> --state_name=<arg> --i=<arg>| --initial_state=<filename> --adjacency_matrix=<filename> --coin_matrix=<filename>) (--graph_creation_fn=<filename> --coin_creation_fn=<filename> --coin_name=<arg> --graph_name=<arg> --n=<int>) (--coin_bias=<arg> --initial_state_bias=<arg>) --coin_decoherence_rate=<arg> --position_decoherence_rate=<arg>  --output_filename=<filename>] STEPS
     quantum_walk -h
     quantum_walk --version
 
@@ -31,6 +31,7 @@ Options:
 import docopt
 from quantum_walk.walker import QuantumWalk, create_sample_initial_state, create_sample_time_ev_operators
 from quantum_walk.walk_on_line import QuantumWalkOnLine
+from quantum_walk.decohering_walk_on_line import DecoheringWalkOnLine
 import pickle
 from scipy.fftpack import fft
 import numpy as np
@@ -93,11 +94,24 @@ def initialise_walk_on_arbitrary_graph(options):
     return walk
 
 
+def initialise_walk_on_line(options):
+    print options
+    if options['--coin_decoherence_rate'] is not None:
+        if options['--position_decoherence_rate'] is not None:
+            walk = DecoheringWalkOnLine(int(options["STEPS"]), float(options["--coin_bias"]), float(options["--initial_state_bias"]), coin_decoherence_rate = float(options['--coin_decoherence_rate']), position_decoherence_rate = float(options['--position_decoherence_rate']))
+        else:
+            walk = DecoheringWalkOnLine(int(options["STEPS"]), float(options["--coin_bias"]), float(options["--initial_state_bias"]), coin_decoherence_rate = float(options['--coin_decoherence_rate']))
+    elif options['--position_decoherence_rate'] is not None:
+        walk = DecoheringWalkOnLine(int(options["STEPS"]), float(options["--coin_bias"]), float(options["--initial_state_bias"]), position_decoherence_rate = float(options['--position_decoherence_rate']))
+    else:
+        walk = QuantumWalkOnLine(int(options["STEPS"]), float(options["--coin_bias"]), float(options["--initial_state_bias"]))
+    return walk
+
 def run_walk():
     options = docopt.docopt(__doc__, version='0.1')
-    condition = "--coin_bias" in options.keys()
+    condition = options["--coin_bias"] is not None
     if condition:
-        walk = QuantumWalkOnLine(int(options["STEPS"]), float(options["--coin_bias"]), float(options["--initial_state_bias"]))
+        walk = initialise_walk_on_line(options)
     else:
         walk = initialise_walk_on_arbitrary_graph(options)
     steps = options["STEPS"]
