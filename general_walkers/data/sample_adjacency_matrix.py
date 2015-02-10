@@ -1,6 +1,8 @@
+import numpy as np
+
 def sample_graph(n):
     number_of_nodes = n + 2
-    adj = np.zeros((number_of_nodes, number_of_nodes), dtype=int)
+    adj = np.zeros((number_of_nodes, number_of_nodes))
     for i in xrange(1, number_of_nodes - 1):
         # join every node to first and last
         adj[i][0], adj[i][-1] = 1, 1

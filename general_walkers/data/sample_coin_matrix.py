@@ -1,6 +1,11 @@
+import numpy as np
+import scipy.linalg
+
+
 def sample_coin(n):
-     dft = fft(np.eye(n))
-     end_nodes_coin = dft/scipy.linalg.norm(dft)
+     #dft = hfft(np.eye(n))
+     #end_nodes_coin = dft/scipy.linalg.norm(dft)
+     end_nodes_coin = np.eye(n) - 2./n
      a = 2**-0.5
      hadamard = np.array([[a, a],[a, -a]])
      all_coins = [end_nodes_coin]
