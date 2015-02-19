@@ -66,4 +66,66 @@ class WalkOnCompleteGraph(WalkOnRegularGraph):
         np.fill_diagonal(matrix, 0)
         self.adjacency_matrix = matrix
 
-    
+
+class DecoheringWalkOnCompleteGraph(WalkOnCompleteGraph, DecoheringWalkOnLine):
+    def __init__(self, n, initial_state=None, coin_operator=None, state_indicator='localised'):
+        self.n = n
+        self.create_adjacency_matrix()
+        super(DecoheringWalkOnCompleteGraph, self).__init__(n, n-1, initial_state=initial_state, coin_operator=coin_operator, adjacency_matrix=self.adjacency_matrix, state_indicator=state_indicator)
+
+    def initialise_coin_projection_operators(self):        
+        n = self.n
+        # can measure either going left state, or going right state
+        projs = [np.zeros_like(self.time_ev_operator) for i in range(n)]
+        for i in range(n):
+            coin_states = [j*n + i for j in range(n-1)]
+            for index in coin_states:
+                projs[i][coin_states][coin_states] = 1
+        self.coin_projection_operators = projs
+        self._projection_operators = self.coin_projection_operators
+
+
+# ok apparently this isnt always possible!    
+def create_regular_graph(number_nodes, degree):
+    if number_nodes % d != 0:
+        raise ValueError("number%nodes mod degree must be even for graph to exist")
+    matrix = np.zeros((number_nodes, number_nodes))
+    # join node x to next degree nodes
+    for node in range(number_nodes):        
+        if (node + 1 + degree)%number_nodes < node:
+            range((node + 1 + degree)%number_nodes), node
+            # we wrap round
+            edges = range((node + 1 +degree)%number_nodes) + range(node + 1, number_nodes)
+        else:
+            edges = range(node + 1, node + degree + 1)
+        print edges
+        for edge in edges:
+            print edge, node
+            matrix[node][edge], matrix[edge][node] = 1, 1
+    return matrix
+
+
+# nodes > 0 already have joins from previous nodes
+
+
+
+def initialise_coin_projection_operators(n):        
+        # can measure either going left state, or going right state
+        projs = [np.zeros((n**2, n**2)) for i in range(n)]
+        for i in range(n):
+            coin_states = [j*n + i for j in range(n)]
+            print coin_states, i
+            for index in coin_states:
+                projs[i][index][index] = 1
+        return projs
+
+
+def initialise_coin_projection_operators(n):
+    identity = np.eye(4)
+    projs = []
+    for i in range(n):
+        proj = np.zeros_like(identity)
+        proj[i][i] = 1
+        projs.append(np.kron(identity,proj))
+    return projs
+        

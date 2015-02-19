@@ -59,7 +59,7 @@ class QuantumWalkOnLine(QuantumWalk):
 
     def create_adjacency_matrix(self):
         """ Creates adjacency matrix for a graph of a cycle of length size.
-            Each node, n, is connected by single edges to nodes n-1 and n+2
+            Each node, n, is connected by single edges to nodes n-1 and n+1
         """
         size = self.line_length
         graph = np.zeros((size, size), dtype=int)

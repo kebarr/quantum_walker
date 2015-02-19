@@ -1,7 +1,9 @@
 import numpy as np
+import numpy.linalg as LA
 import math
 from time_ev_operators import createshift
 
+# improve readibility of result
 np.set_printoptions(precision=3, suppress=True)
 
 def is_unitary(operator, tolerance=0.0001):
@@ -20,13 +22,11 @@ class QuantumWalk(object):
     """Basic quantum walk, where the user defines the initial state and time evolution operators
     """
     def __init__(self, initial_state, coin_operator, adjacency_matrix):
-        print adjacency_matrix
         if not is_unitary(coin_operator):
             raise ValueError("Coin operator must be unitary")
         else:
             self.coin_operator = coin_operator
         self.shift_operator = createshift(adjacency_matrix)
-        print self.shift_operator.shape
         # if invalid adjacency matrix passed in, shift operator isn't validly quantum mechanical
         if not is_unitary(self.shift_operator):
             raise ValueError("Adjacency matirx must have a maximum of 1 link between each pair of nodes and contain no self loops")
@@ -39,7 +39,7 @@ class QuantumWalk(object):
         self.adjacency_matrix = adjacency_matrix
         self.tolerance = 0.0001
         self.degree = len(adjacency_matrix)
-    
+        self.current_step = 0
 
     def create_default_initial_state(self):
         basis_states = self.time_ev_operator.shape[0]
@@ -49,14 +49,14 @@ class QuantumWalk(object):
 
     def step(self):
         self.current_state = np.dot(self.time_ev_operator, self.current_state)
+        self.current_step += 1
 
     def step_back(self):
         self.current_state = np.dot(np.conjugate(self.time_ev_operator.transpose()), self.current_state)
 
     def steps(self, n):
         for i in xrange(n):
-            state = np.dot(self.time_ev_operator, self.current_state)
-        self.current_state = state
+            self.step()
 
     @property
     def node_degrees(self):
@@ -107,6 +107,7 @@ class QuantumWalk(object):
         evolved = np.dot(diag, transformed_basis_vector)
         transformed_back = np.dot(eig, evolved)
         self.current_state = transformed_back
+        self.current_step = step
         return transformed_back
 
 
@@ -136,3 +137,4 @@ def create_sample_time_ev_operators():
     coin = np.kron(id_4, hadamard)
     adjacency_matrix = [[0,1,0,1],[1,0,1,0],[0,1,0,1],[1,0,1,0]]
     return coin, adjacency_matrix
+
