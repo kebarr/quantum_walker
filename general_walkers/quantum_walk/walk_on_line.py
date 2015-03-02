@@ -16,15 +16,16 @@ class QuantumWalkOnLine(QuantumWalk):
        left' and 'going right' states.
        coin_bias- amount of amplitude coin sends left and right on a given step
     """
-    def __init__(self, max_steps, coin_bias=0.5, initial_state_bias=0.5):
+    def __init__(self, max_steps, coin_bias=0.5, initial_state_bias=0.5, jump=1):
         self.max_steps = max_steps
-        self.line_length = 2*max_steps + 2 # making graph larger than number of steps simulates walk on infinite line
+        # jump is for levy walker- musn't step off graph when steps get larger
+        self.line_length = 2*jump*(max_steps + 1) # make graph larger than number of steps simulates walk on infinite line
         self.coin_bias = coin_bias
         self.initial_state_bias = initial_state_bias
         self.create_adjacency_matrix()
-        self.create_initial_state(initial_state_bias)
+        self.create_initial_state()
         self.create_coin(coin_bias)
-        print self.coin.shape, self.initial_state.shape
+        print self.coin.shape, self.initial_state.shape, self.adjacency_matrix.shape
         self.number_of_steps = 0
         super(QuantumWalkOnLine, self).__init__(self.initial_state, self.coin, self.adjacency_matrix)
         
@@ -70,15 +71,18 @@ class QuantumWalkOnLine(QuantumWalk):
         graph[indices + 1, left_links] = 1
         # join up to create cycle to avoid edge effects, amplitude never reaches here anyway
         graph[0][-1], graph[-1][0] = 1, 1
+        print graph
         self.adjacency_matrix = graph
     
 
-    def create_initial_state(self, initial_state_bias):
+    def create_initial_state(self):
+        initial_state_bias = self.initial_state_bias
         size = self.line_length + 1
         middle = size/2
         vector = np.zeros((2*(size - 1)))
         vector[2*middle] = initial_state_bias**0.5
         vector[2*middle + 1] = (1-initial_state_bias)**0.5
+        print vector
         self.initial_state = vector
 
     def create_coin(self, coin_bias):
